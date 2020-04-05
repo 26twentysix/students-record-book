@@ -7,7 +7,7 @@ using namespace std;
 
 bool SortNames(string name1, string name2) {
 	vector<string> v = { name1, name2 };
-	for (size_t i = 0; i < 2; i++){
+	for (size_t i = 0; i < 2; i++) {
 		for (size_t j = i + 1; j < 2; j++) {
 			if (strcmp(v[i].c_str(), v[j].c_str()) > 0)
 			{
@@ -62,6 +62,10 @@ public:
 		Student* prev;
 		Student* next;
 	};
+	Group(string name) {
+		groupName = name;
+		studentsCount = 0;
+	}
 	void SetGroupName(string name) {
 		groupName = name;
 	}
@@ -82,7 +86,7 @@ public:
 				tmp = tmp->next;
 				name1 = tmp->studentRecord.GetName();
 			}
-			if (tmp->next == nullptr && SortNames(name1,name)) {
+			if (tmp->next == nullptr && SortNames(name1, name)) {
 				tmp->next = newStudent;
 				newStudent->prev = tmp;
 				newStudent->next = nullptr;
@@ -183,26 +187,36 @@ public:
 		}
 		tmp->studentRecord.PrintRecord();
 	}
+	~Group() {
+		groupName.clear();
+		auto tmp = head;
+		while (tmp->next != nullptr) {
+			auto tmp1 = tmp;
+			tmp = tmp->next;
+			RemoveStudent(tmp1->studentRecord.GetName());
+		}
+		RemoveStudent(tmp->studentRecord.GetName());
+	}
 private:
 	Student* head;
 	string groupName;
-	size_t studentsCount = 0;
+	size_t studentsCount;
 };
 
 int main() {
 	setlocale(0, "");
-	Group mh;
-	mh.SetGroupName("МХ-101");
+	Group mh("МХ-101");
+	//mh.SetGroupName("МХ-101");
 	mh.AddStudent("Кутас Сергей Витальевич");
 	cout << "Поиск студента" << endl;
 	mh.FindStudent("Кутас Сергей Витальевич");
-	mh.AddStudentExam("Кутас Сергей Витальевич", "Математический анализ", "14.01.2020", "удовл.");
-	mh.AddStudentExam("Кутас Сергей Витальевич","Алгебра и геометрия", "21.01.2020", "хор.");
+	mh.AddStudentExam("Кутас Сергей Витальевич", "Математический анализ", "14.01.2020", "неуд.");
+	mh.AddStudentExam("Кутас Сергей Витальевич", "Алгебра и геометрия", "21.01.2020", "хор.");
 	cout << endl << endl << "Зачетка Сергея" << endl;
 	mh.PrintStudentRecord("Кутас Сергей Витальевич");
 	mh.AddStudent("Кондратьева Анастасия Григорьевна");
 	mh.FindStudent("Кондратьева Анастасия Григорьевна");
-	mh.AddStudentExam("Кондратьева Анастасия Григорьевна", "Математический анализ", "14.01.2020", "удовл.");
+	mh.AddStudentExam("Кондратьева Анастасия Григорьевна", "Математический анализ", "14.01.2020", "неуд.");
 	mh.RemoveStudentExam("Кутас Сергей Витальевич", "Алгебра и геометрия");
 	cout << endl << endl << "Зачетка Анастасии" << endl;
 	mh.PrintStudentRecord("Кондратьева Анастасия Григорьевна");
