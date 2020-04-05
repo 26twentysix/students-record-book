@@ -53,6 +53,18 @@ public:
 				}
 			}
 		}
+		friend ostream& operator<< (ostream& out, Group::Record& record) {
+			out << record.GetName() << "\n";
+			for (size_t i = 0; i < record.exams.size(); i++) {
+				out << record.exams[i] << "\n";
+			}
+			return out;
+		}
+		friend istream& operator>>(istream& in, Group::Record& record) {
+
+			getline(in, record.studentName);
+			return in;
+		}
 	private:
 		string studentName;
 		vector<string> exams;
@@ -186,16 +198,53 @@ public:
 			tmp = tmp->next;
 		}
 		tmp->studentRecord.PrintRecord();
+    cout << endl;
 	}
-	~Group() {
-		groupName.clear();
-		auto tmp = head;
-		while (tmp->next != nullptr) {
-			auto tmp1 = tmp;
-			tmp = tmp->next;
-			RemoveStudent(tmp1->studentRecord.GetName());
+	friend Group operator+ (Group& grp, Group::Record& rec) {
+		if (grp.studentsCount == 0) {
+			grp.head = new Student;
+			grp.head->studentRecord = rec;
+			grp.head->prev = nullptr;
+			grp.head->next = nullptr;
+			grp.studentsCount++;
 		}
-		RemoveStudent(tmp->studentRecord.GetName());
+		else {
+			auto tmp = grp.head;
+			string name1 = tmp->studentRecord.GetName();
+			auto newStudent = new Student;
+			newStudent->studentRecord = rec;
+			string name = rec.GetName();
+			while (SortNames(name1, name) && tmp->next != nullptr) {
+				tmp = tmp->next;
+				name1 = tmp->studentRecord.GetName();
+			}
+			if (tmp->next == nullptr && SortNames(name1, name)) {
+				tmp->next = newStudent;
+				newStudent->prev = tmp;
+				newStudent->next = nullptr;
+			}
+			else if (!SortNames(name1, name) && tmp->next == nullptr) {
+				auto tmpNext = tmp;
+				grp.head = newStudent;
+				grp.head->prev = nullptr;
+				grp.head->next = tmpNext;
+				tmpNext->prev = grp.head;
+			}
+			else {
+				auto prevTmp = tmp->prev;
+				newStudent->next = tmp;
+				newStudent->prev = prevTmp;
+				prevTmp->next = newStudent;
+				tmp->prev = newStudent;
+			}
+			grp.studentsCount++;
+		}
+		return grp;
+	}
+	friend Group operator- (Group& grp, Group::Record& rec) {
+		string name = rec.GetName();
+		grp.RemoveStudent(name);
+		return grp;
 	}
 private:
 	Student* head;
@@ -206,23 +255,18 @@ private:
 int main() {
 	setlocale(0, "");
 	Group mh("МХ-101");
-	//mh.SetGroupName("МХ-101");
-	mh.AddStudent("Кутас Сергей Витальевич");
-	cout << "Поиск студента" << endl;
-	mh.FindStudent("Кутас Сергей Витальевич");
-	mh.AddStudentExam("Кутас Сергей Витальевич", "Математический анализ", "14.01.2020", "неуд.");
-	mh.AddStudentExam("Кутас Сергей Витальевич", "Алгебра и геометрия", "21.01.2020", "хор.");
-	cout << endl << endl << "Зачетка Сергея" << endl;
-	mh.PrintStudentRecord("Кутас Сергей Витальевич");
-	mh.AddStudent("Кондратьева Анастасия Григорьевна");
-	mh.FindStudent("Кондратьева Анастасия Григорьевна");
-	mh.AddStudentExam("Кондратьева Анастасия Григорьевна", "Математический анализ", "14.01.2020", "неуд.");
-	mh.RemoveStudentExam("Кутас Сергей Витальевич", "Алгебра и геометрия");
-	cout << endl << endl << "Зачетка Анастасии" << endl;
-	mh.PrintStudentRecord("Кондратьева Анастасия Григорьевна");
-	cout << endl << endl << "Зачетка группы после удаления экзамена у Сергея" << endl;
+	Group::Record record;
+//cin >> record;
+  record.SetName("Речкалов Андрей Юрьевич");
+	record.AddExam("Математический анализ", "15.01.2020", "удовл.");
+	cout << record;
+	Group::Record record1;
+	record1.SetName("Чиликин Клим Евгеньевич");
+	record1.AddExam("Математический анализ", "15.01.2020", "неуд.");
+	mh = mh + record;
+	mh = mh + record1;
 	mh.PrintGroupRecord();
-	mh.RemoveStudent("Кутас Сергей Витальевич");
-	cout << endl << endl << "Зачетка группы после удаления Cергея" << endl;
+	mh = mh - record1;
 	mh.PrintGroupRecord();
+
 }
